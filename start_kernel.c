@@ -16,7 +16,7 @@ static void invoke_global_ctors(void)
     _init();
 }
 
-void start_kernel(void) __attribute__((noreturn));
+void start_kernel(void) __attribute__((noreturn, section("low-memory-text")));
 
 void start_kernel(void)
 {

@@ -12,31 +12,33 @@ SECTIONS
     .low-memory : ALIGN(4K)
     {
         *(multiboot)
+        *(low-memory-data)
+        *(low-memory-text)
     }
     LOW_MEM_END = .;
 
+    . += KERNEL_VIRTUAL_MEM_OFFSET;
+
     HIGH_MEM_START = .;
-    .text BLOCK(4K) : ALIGN(4K)
+    .text ALIGN(4K) : AT(ADDR(.text) - KERNEL_VIRTUAL_MEM_OFFSET)
     {
         *(.text)
     }
 
-    .data BLOCK(4K) : ALIGN(4K)
+    .data ALIGN(4K) : AT(ADDR(.data) - KERNEL_VIRTUAL_MEM_OFFSET)
     {
         *(.data)
     }
 
-    .rodata BLOCK(4K) : ALIGN(4K)
+    .rodata ALIGN(4K) : AT(ADDR(.rodata) - KERNEL_VIRTUAL_MEM_OFFSET)
     {
         *(.rodata)
     }
 
-    .bss BLOCK(4K) : ALIGN(4K)
+    .bss ALIGN(4K) : AT(ADDR(.bss) - KERNEL_VIRTUAL_MEM_OFFSET)
     {
         *(COMMON)
         *(.bss)
-        *(.bootstrap_stack)
-        *(.early_paging)
     }
     HIGH_MEM_END = .;
 }

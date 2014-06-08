@@ -25,5 +25,6 @@ SECTIONS
         *(COMMON)
         *(.bss)
         *(.bootstrap_stack)
+        *(.early_paging)
     }
 }

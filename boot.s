@@ -12,14 +12,24 @@
 
 .section .bootstrap_stack, "aw", @nobits
 stack_bottom:
-.skip 16384 # 16 KB
+.skip 0x4000 # 16 KB
 stack_top:
+
+.section .early_paging
+.align 0x1000
+early_page_dir:
+.skip 0x1000 # 4 KB
+early_kernel_page_tbl:
+.skip 0x1000
+early_low_page_tbl:
+.skip 0x1000
 
 .section .text
 .global _start
 .type _start, @function
 _start:
     movl $stack_top, %esp
+    call init_early_paging
     call _init
     call kernel_main
     # hang just in case kernel_main returns
@@ -29,4 +39,11 @@ _start:
     jmp .hang
 
 .size _start, . - _start
+
+.type init_early_paging, @function
+init_early_paging:
+    pusha
+
+    popa
+    ret
 

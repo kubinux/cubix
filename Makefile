@@ -20,7 +20,15 @@ CXXFLAGS := -std=c++11       \
             $(WARNING_FLAGS)
 
 
-OBJS := boot.o kernel.o vga.o port_io.o memcpy.o printk.o cxa_guard.o
+OBJS := highmem_kernel_paging.o \
+        kernel.o                \
+        vga.o                   \
+        port_io.o               \
+        memcpy.o                \
+        printk.o                \
+        cxa_guard.o             \
+        multiboot.o             \
+        start_kernel.o
 
 
 CRTI_OBJ      := crti.o

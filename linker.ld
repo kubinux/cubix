@@ -12,8 +12,7 @@ SECTIONS
     .low-memory : ALIGN(4K)
     {
         *(multiboot)
-        *(low-memory-data)
-        *(low-memory-text)
+        start_kernel.o(.text .data .rodata .bss)
     }
     LOW_MEM_END = .;
 

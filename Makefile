@@ -20,8 +20,7 @@ CXXFLAGS := -std=c++11       \
             $(WARNING_FLAGS)
 
 
-OBJS := highmem_kernel_paging.o \
-        kernel.o                \
+OBJS := kernel.o                \
         vga.o                   \
         port_io.o               \
         memcpy.o                \

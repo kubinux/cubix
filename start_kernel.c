@@ -6,8 +6,8 @@ static uint32_t get_kernel_virtual_mem_offset(void)
 {
     // see linker.ld for definitions of external symbols
     extern char HIGH_MEM_START[];
-    extern char LOW_MEM_START[];
-    return (uint32_t)HIGH_MEM_START - (uint32_t)LOW_MEM_START;
+    extern char LOW_MEM_END[];
+    return (uint32_t)HIGH_MEM_START - (uint32_t)LOW_MEM_END;
 }
 
 static uint32_t page_table[1024] __attribute__((aligned(4096)));

@@ -8,22 +8,34 @@ static void put_char(char c)
     vga_putc(c);
 }
 
-static int put_int32(int32_t val)
+static int put_uint32(uint32_t val, int radix)
 {
-    // TODO
-    return 0;
+    char digits[32] = { 0 };
+    int num_digits = 0;
+    do
+    {
+        digits[num_digits++] = "0123456789abcdef"[val % radix];
+        val /= radix;
+    }
+    while (val);
+    for (int i = num_digits - 1; i >= 0; --i)
+    {
+        put_char(digits[i]);
+    }
+    return num_digits;
 }
 
-static int put_uint32(uint32_t val)
+static int put_int32(int32_t val, int radix)
 {
-    // TODO
-    return 0;
-}
-
-static int put_uint32_hex(uint32_t val)
-{
-    // TODO
-    return 0;
+    int num_written = 0;
+    if (val < 0)
+    {
+        put_char('-');
+        ++num_written;
+        val = -val;
+    }
+    num_written += put_uint32((uint32_t)val, radix);
+    return num_written;
 }
 
 static int put_str(const char *str)
@@ -62,13 +74,14 @@ static int vprintk(const char *fmt, va_list va)
             num_written += put_str(va_arg(va, const char*));
             break;
         case 'd':
-            num_written += put_int32(va_arg(va, int32_t));
+            num_written += put_int32(va_arg(va, int32_t), 10);
             break;
         case 'u':
-            num_written += put_uint32(va_arg(va, uint32_t));
+            num_written += put_uint32(va_arg(va, uint32_t), 10);
             break;
         case 'x':
-            num_written += put_uint32_hex(va_arg(va, uint32_t));
+            num_written += put_uint32(va_arg(va, uint32_t), 16);
+            break;
         default:
             return -1;
         }

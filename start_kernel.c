@@ -63,7 +63,7 @@ static void enable_paging(void)
     __asm__ __volatile__("movl %0, %%cr0" : : "r"(cr0));
 }
 
-void init_highmem_kernel_paging(void)
+static void init_highmem_kernel_paging(void)
 {
     init_page_table();
     init_page_directory();
@@ -77,18 +77,10 @@ static void invoke_global_ctors(void)
     _init();
 }
 
-__attribute__((noreturn)) static void hang(void)
-{
-    while (1)
-    {
-    }
-}
-
-__attribute__((noreturn)) void start_kernel(void)
+void start_kernel(uint32_t magic, uint32_t boot_info_addr)
 {
     init_highmem_kernel_paging();
     invoke_global_ctors();
-    kernel_main();
-    hang();
+    kernel_main(magic, boot_info_addr);
 }
 

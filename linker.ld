@@ -1,5 +1,5 @@
 OUTPUT_FORMAT(elf32-i386)
-ENTRY(start_kernel)
+ENTRY(_start)
 
 KERNEL_LOADED_AT = 0x00100000;
 KERNEL_VIRTUAL_MEM_OFFSET = 0xc0000000;
@@ -11,7 +11,8 @@ SECTIONS
     LOW_MEM_START = .;
     .low-memory : ALIGN(4K)
     {
-        *(multiboot)
+        multiboot.o(.text .data .rodata .bss)
+        boot.o(.text .data .rodata .bss .bootstrap_stack)
         start_kernel.o(.text .data .rodata .bss)
     }
     LOW_MEM_END = .;

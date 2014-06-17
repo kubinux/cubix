@@ -1,44 +1,49 @@
-OUTPUT_FORMAT(elf32-i386)
 ENTRY(_start)
 
-KERNEL_LOADED_AT = 0x00100000;
-KERNEL_VIRTUAL_MEM_OFFSET = 0xc0000000;
+_kernel_virt_offset = 0xFFFFFFFF80000000;
+_kernel_phys_start = 0x00100000;
+_kernel_virt_start = _kernel_phys_start + _kernel_virt_offset;
 
 SECTIONS
 {
-    . = KERNEL_LOADED_AT;
+    . = _kernel_phys_start;
 
-    LOW_MEM_START = .;
-    .low-memory : ALIGN(4K)
+    .low-memory ALIGN(4K):
     {
-        multiboot.o(.text .data .rodata .bss)
-        boot.o(.text .data .rodata .bss .bootstrap_stack)
-        start_kernel.o(.text .data .rodata .bss)
+        src/startup/multiboot.o(*)
+        src/startup/startup.o(*)
+        src/startup/enter_long_mode.o(*)
     }
-    LOW_MEM_END = .;
 
-    . += KERNEL_VIRTUAL_MEM_OFFSET;
+    . += _kernel_virt_offset;
 
-    HIGH_MEM_START = .;
-    .text ALIGN(4K) : AT(ADDR(.text) - KERNEL_VIRTUAL_MEM_OFFSET)
+    .text ALIGN(0x1000) : AT(ADDR(.text) - _kernel_virt_offset)
     {
         *(.text)
     }
 
-    .data ALIGN(4K) : AT(ADDR(.data) - KERNEL_VIRTUAL_MEM_OFFSET)
-    {
-        *(.data)
-    }
-
-    .rodata ALIGN(4K) : AT(ADDR(.rodata) - KERNEL_VIRTUAL_MEM_OFFSET)
+    .rodata ALIGN(0x1000) : AT(ADDR(.rodata) - _kernel_virt_offset)
     {
         *(.rodata)
     }
 
-    .bss ALIGN(4K) : AT(ADDR(.bss) - KERNEL_VIRTUAL_MEM_OFFSET)
+    .data ALIGN(0x1000) : AT(ADDR(.data) - _kernel_virt_offset)
+    {
+        *(.data)
+    }
+
+    .bss ALIGN(0x1000) : AT(ADDR(.bss) - _kernel_virt_offset)
     {
         *(COMMON)
         *(.bss)
     }
-    HIGH_MEM_END = .;
+
+    _kernel_virt_end = .;
+    _kernel_phys_end = _kernel_virt_end - _kernel_virt_offset;
+
+    /DISCARD/ :
+    {
+        *(.comment)
+    }
+
 }

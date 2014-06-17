@@ -1,41 +1,49 @@
-TARGET := i686-elf
+TARGET := x86_64-elf
 CC     := $(TARGET)-gcc
 CXX    := $(TARGET)-g++
 AS     := $(TARGET)-as
 
 
-
 WARNING_FLAGS := -Wall -Wextra
 
 
-CFLAGS := -std=c11           \
+CFLAGS := -std=gnu11         \
+          -mno-red-zone      \
+          -mno-mmx           \
+          -mno-sse           \
+          -mno-sse2          \
+          -mno-sse3          \
+          -mno-3dnow         \
           -ffreestanding     \
+          -mcmodel=kernel    \
+          -g                 \
           $(WARNING_FLAGS)
 
 
-CXXFLAGS := -std=c++11       \
-            -ffreestanding   \
-            -fno-exceptions  \
-            -fno-rtti        \
-            $(WARNING_FLAGS)
+CPPFLAGS := -I src
 
 
-OBJS := boot.o                  \
-        multiboot.o             \
-        start_kernel.o          \
-        kernel.o                \
-        vga.o                   \
-        port_io.o               \
-        memcpy.o                \
-        printk.o                \
-        cxa_guard.o
+LDFLAGS := -T linker.ld            \
+           -ffreestanding          \
+           -z max-page-size=0x1000 \
+           -nostdlib               \
+           -g
 
 
-CRTI_OBJ      := crti.o
-CRTBEGIN_OBJ  := $(shell $(CXX) $(CXXFLAGS) -print-file-name=crtbegin.o)
-CRTEND_OBJ    := $(shell $(CXX) $(CXXFLAGS) -print-file-name=crtend.o)
-CRTN_OBJ      := crtn.o
-KERNEL_OBJS   := $(CRTI_OBJ) $(CRTBEGIN_OBJ) $(OBJS) $(CRTEND_OBJ) $(CRTN_OBJ)
+OBJS := src/startup/startup.o         \
+        src/startup/multiboot.o       \
+        src/startup/enter_long_mode.o \
+        src/startup/kernel_main.o     \
+        src/lib/memcpy.o              \
+        src/lib/memset.o              \
+        src/lib/printf.o              \
+        src/lib/assert.o              \
+        src/mm/paging.o               \
+        src/mm/linker_symbols.o       \
+        src/mm/phys_allocator.o       \
+        src/mm/mm.o                   \
+        src/io/vga.o                  \
+        src/io/port_io.o              \
 
 
 cubix.iso: cubix.bin grub.cfg
@@ -46,19 +54,30 @@ cubix.iso: cubix.bin grub.cfg
 	rm -rf isodir
 
 
-cubix.bin: $(KERNEL_OBJS) linker.ld
-	$(CXX) -T linker.ld -ffreestanding -nostdlib -lgcc -o $@ $(KERNEL_OBJS)
+cubix.bin: $(OBJS)
+	$(CC) $(LDFLAGS) -lgcc -o $@ $^
+
+
+cubix.bin: linker.ld
 
 
 isodir/boot/cubix.bin: cubix.bin
-	cp $< $@
+	cp $^ $@
 
 
 .PHONY: run
 run: cubix.iso
-	qemu-system-i386 -cdrom cubix.iso
+	qemu-system-x86_64 -monitor stdio -m 4000 -cdrom $<
 
 
-.PHONT: clean
+.PHONY: run-dbg
+run-dbg: cubix.iso
+	qemu-system-x86_64 -s -cdrom $< &
+	sleep 5
+	gdb cubix.bin -ex 'break main' -ex 'target remote localhost:1234'
+
+
+.PHONY: clean
 clean:
-	rm -f *.o
+	find -name '*.o' -delete
+

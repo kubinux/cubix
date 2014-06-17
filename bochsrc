@@ -1,0 +1,8 @@
+# Tell bochs to use our boot sector code as though it were
+# a floppy disk inserted into a computer at boot time .
+ata0: enabled=1, ioaddr1=0x1f0, ioaddr2=0x3f0, irq=14
+ata0-master: type=cdrom, path="cubix.iso", status=inserted
+floppya: 1_44=os-image, status=inserted
+boot: cdrom
+display_library: sdl
+#ne2k: ioaddr=0x300, irq=10, mac=b0:c4:20:00:00:00, ethmod=linux, ethdev=eth0

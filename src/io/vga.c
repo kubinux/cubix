@@ -1,9 +1,8 @@
-#include "vga.h"
-#include "port_io.h"
-#include "memcpy.h"
+#include <io/vga.h>
+#include <io/port_io.h>
+#include <mm/linker_symbols.h>
+#include <lib/memcpy.h>
 #include <stdint.h>
-
-static uint16_t * const VIDEO_MEMORY = (uint16_t *)0xb8000;
 
 static const uint16_t MAX_ROWS = 25;
 
@@ -26,9 +25,14 @@ static uint16_t get_offset(struct cursor cur)
     return cur.row * MAX_COLS + cur.column;
 }
 
+static uint16_t *get_vga_base(void)
+{
+    return (uint16_t *)(0xb8000 + kernel_virt_offset);
+}
+
 static uint16_t *get_vga_address(struct cursor cur)
 {
-    return VIDEO_MEMORY + get_offset(cur);
+    return get_vga_base() + get_offset(cur);
 }
 
 static void set_cursor(struct cursor cur)
@@ -49,11 +53,8 @@ static struct cursor get_cursor(void)
     uint16_t offset = high_byte;
     offset <<= 8;
     offset += low_byte;
-    struct cursor cur =
-    { 
-        (uint16_t)(offset / MAX_COLS),
-        (uint16_t)(offset % MAX_COLS)
-    };
+    struct cursor cur = {(uint16_t)(offset / MAX_COLS),
+                         (uint16_t)(offset % MAX_COLS)};
     return cur;
 }
 
@@ -68,7 +69,7 @@ static uint16_t make_cell(uint8_t ch, uint8_t attr)
 static void clear_row(int row)
 {
     uint16_t cell = make_cell(' ', WHITE_ON_BLACK);
-    uint16_t *mem = VIDEO_MEMORY + row * MAX_COLS;
+    uint16_t *mem = get_vga_base() + row * MAX_COLS;
     for (int i = 0; i < MAX_COLS; ++i)
     {
         mem[i] = cell;
@@ -77,10 +78,10 @@ static void clear_row(int row)
 
 static void scroll(void)
 {
+    uint16_t *vga_base = get_vga_base();
     for (int row = 1; row < MAX_ROWS; ++row)
     {
-        memcpy(VIDEO_MEMORY + (row - 1) * MAX_COLS,
-               VIDEO_MEMORY + row * MAX_COLS,
+        memcpy(vga_base + (row - 1) * MAX_COLS, vga_base + row * MAX_COLS,
                MAX_COLS * 2);
     }
     clear_row(MAX_ROWS - 1);
@@ -107,7 +108,7 @@ void vga_clear(void)
     {
         clear_row(i);
     }
-    struct cursor top_left = { 0, 0 };
+    struct cursor top_left = {0, 0};
     set_cursor(top_left);
 }
 

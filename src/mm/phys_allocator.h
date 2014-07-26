@@ -16,14 +16,11 @@
 #ifndef PHYS_ALLOCATOR_H_INCLUDED_VACHCL58
 #define PHYS_ALLOCATOR_H_INCLUDED_VACHCL58
 
-#include <mm/mmap_region.h>
+#include <mm/address_range.h>
 #include <stdint.h>
 
 
-uintptr_t alloc_phys_page_early(void);
-
-
-void init_phys_allocator(const struct mmap_region *regions, int num_regions);
+void init_phys_allocator(const struct address_range *regions, int num_regions);
 
 
 void print_phys_mem(void);

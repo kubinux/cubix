@@ -39,6 +39,5 @@ const uintptr_t kernel_phys_end = (uintptr_t)&_kernel_phys_end;
 
 const uintptr_t kernel_virt_end = (uintptr_t)&_kernel_virt_end;
 
-
 #endif // include guard
 

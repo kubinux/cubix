@@ -16,10 +16,28 @@
 #ifndef MM_H_INCLUDED_PYZC6EWG
 #define MM_H_INCLUDED_PYZC6EWG
 
-#include <mm/mmap_region.h>
+#include <mm/address_range.h>
+#include <mm/linker_symbols.h>
+#include <stdint.h>
+#include <stddef.h>
 
 
-void mm_init(const struct mmap_region *regions, int num_regions);
+#define PAGE_OFFSET 0xFFFF880000000000
+
+
+void mm_init(struct address_range *ranges, size_t num_ranges);
+
+
+inline uintptr_t mm_va(uintptr_t phys_address)
+{
+    return phys_address + PAGE_OFFSET;
+}
+
+
+inline uintptr_t mm_pa(uintptr_t virt_address)
+{
+    return virt_address - PAGE_OFFSET;
+}
 
 
 #endif // include guard

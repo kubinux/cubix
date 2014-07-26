@@ -20,16 +20,37 @@
 #include <stddef.h>
 
 
+#define PAGE_SIZE 0x1000
+
+
 typedef uint64_t mmap_entry_t[512] __attribute__((aligned(0x1000)));
 
 
-void init_kernel_pages(void);
+inline size_t get_pt_index(uintptr_t virt_address)
+{
+    return (virt_address >> 12) & 0x1FF;
+}
+
+
+inline size_t get_pd_index(uintptr_t virt_address)
+{
+    return (virt_address >> 21) & 0x1FF;
+}
+
+
+inline size_t get_pdp_index(uintptr_t virt_address)
+{
+    return (virt_address >> 30) & 0x1FF;
+}
+
+
+inline size_t get_pml4_index(uintptr_t virt_address)
+{
+    return (virt_address >> 39) & 0x1FF;
+}
 
 
 void invalidate_page(uintptr_t virt_address);
-
-
-void remap_kernel_page(uintptr_t virt_address, uintptr_t phys_address);
 
 
 #endif // include guard

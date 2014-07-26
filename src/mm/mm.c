@@ -18,37 +18,98 @@
 #include <mm/linker_symbols.h>
 #include <mm/phys_allocator.h>
 #include <lib/printf.h>
+#include <lib/memcpy.h>
+#include <lib/memset.h>
+#include <lib/assert.h>
 #include <stdint.h>
+#include <stddef.h>
 
 
-static uintptr_t find_max_phys_address(const struct mmap_region *regions,
-                                       int num_regions)
+static struct address_range *mem_regions_begin;
+static struct address_range *mem_regions_end;
+
+
+static mmap_entry_t pml4;
+
+
+static uintptr_t alloc_phys_page_early(void)
 {
-    uintptr_t max_address = 0;
-    for (int i = 0; i < num_regions; ++i)
+    ASSERT_MSG(mem_regions_begin != mem_regions_end, "No memory left");
+    ASSERT_MSG(mem_regions_begin->begin != mem_regions_begin->end,
+               "Empty memory region");
+    uintptr_t phys_address = mem_regions_begin->begin;
+    mem_regions_begin->begin += PAGE_SIZE;
+    if (mem_regions_begin->begin == mem_regions_begin->end)
     {
-        uintptr_t new_max = regions[i].addr + regions[i].size - 1;
-        if (new_max > max_address)
-        {
-            max_address = new_max;
-        }
+        ++mem_regions_begin;
     }
-    return max_address;
+    void *page = (void *)phys_address;
+    memset(page, 0, PAGE_SIZE);
+    return phys_address;
 }
 
 
-void mm_init(const struct mmap_region *regions, int num_regions)
+static void init_memory_regions(struct address_range *ranges,
+                                size_t num_ranges)
 {
-    init_kernel_pages();
-    for (int i = 0; i < num_regions; ++i)
+    ASSERT_MSG(num_ranges > 0, "No memory regions");
+    mem_regions_begin = ranges;
+    mem_regions_end = ranges + num_ranges;
+}
+
+
+static void map_address_range_early(uintptr_t beg_phys, uintptr_t end_phys,
+                                    uintptr_t virt_offset, uint32_t flags)
+{
+    uint64_t *pd = NULL;
+    for (uintptr_t phys = beg_phys; phys < end_phys; phys += 0x200000)
     {
-        printf("addr = 0x%lx, size = %lu, usable = %d\n",
-               regions[i].addr,
-               regions[i].size,
-               regions[i].usable);
+        uintptr_t virt = phys + virt_offset;
+        size_t pdi = get_pd_index(virt);
+        if (pdi == 0)
+        {
+            pd = (uint64_t *)alloc_phys_page_early();
+            size_t pml4i = get_pml4_index(virt);
+            uint64_t *pdp = NULL;
+            if (pml4[pml4i] != 0)
+            {
+                pdp = (uint64_t *)(pml4[pml4i] & (~0xFFF));
+            }
+            else
+            {
+                pdp = (uint64_t *)alloc_phys_page_early();
+                pml4[pml4i] = (uintptr_t)pdp | 0x1 | flags;
+            }
+            size_t pdpi = get_pdp_index(virt);
+            pdp[pdpi] = (uintptr_t)pd | 0x1 | flags;
+        }
+        pd[pdi] = phys | 0x81 | flags;
     }
-    printf("max addr: %lu\n", find_max_phys_address(regions, num_regions));
-    printf("kernel end: %lx\n", kernel_phys_end);
-    init_phys_allocator(regions, num_regions);
+}
+
+
+static void init_kernel_pages(void)
+{
+    struct address_range *last_region = mem_regions_end - 1;
+    map_address_range_early(0, 0x40000000, kernel_virt_offset, 0x2);
+    map_address_range_early(0, last_region->end, PAGE_OFFSET, 0x2);
+    __asm__ __volatile__(
+        "movq %0, %%cr3" ::"r"((uintptr_t)pml4 - kernel_virt_offset)
+        : "memory");
+}
+
+
+extern uintptr_t mm_va(uintptr_t phys_address);
+
+
+extern uintptr_t mm_pa(uintptr_t virt_address);
+
+
+void mm_init(struct address_range *ranges, size_t num_ranges)
+{
+    init_memory_regions(ranges, num_ranges);
+    init_kernel_pages();
+    init_phys_allocator(mem_regions_begin,
+                        mem_regions_end - mem_regions_begin);
 }
 

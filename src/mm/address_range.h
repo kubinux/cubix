@@ -13,17 +13,18 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef MMAP_REGION_H_INCLUDED_DNSV8CM7
-#define MMAP_REGION_H_INCLUDED_DNSV8CM7
+#ifndef ADDRESS_RANGE_H_INCLUDED_HF80SI67
+#define ADDRESS_RANGE_H_INCLUDED_HF80SI67
 
 #include <stdint.h>
 
-struct mmap_region
+
+struct address_range
 {
-    uintptr_t addr;
-    uintmax_t size;
-    int usable;
+    uintptr_t begin;
+    uintptr_t end;
 };
+
 
 #endif // include guard
 

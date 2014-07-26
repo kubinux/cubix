@@ -139,7 +139,7 @@ init_pml4:
     movl $0, %edi
     movl %ecx, (%edx, %edi, 8)
     movl $pdp_high, %ecx
-    orl $3, %ecx
+    orl  %ebx, %ecx
     movl $511, %edi
     movl %ecx, (%edx, %edi, 8)
     popa

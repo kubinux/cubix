@@ -13,23 +13,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef PHYS_ALLOCATOR_H_INCLUDED_VACHCL58
-#define PHYS_ALLOCATOR_H_INCLUDED_VACHCL58
+#ifndef SLAB_H_INCLUDED_LAFCXXUQ
+#define SLAB_H_INCLUDED_LAFCXXUQ
 
-#include <mm/address_range.h>
-#include <stdint.h>
-#include <stddef.h>
-
-void init_phys_allocator(const struct address_range *regions, int num_regions);
-
-
-void print_phys_mem(void);
-
-
-void *alloc_pages(size_t num_pages);
-
-
-void free_pages(void *virt_address, size_t num_pages);
 
 
 #endif // include guard

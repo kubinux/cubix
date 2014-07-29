@@ -95,22 +95,26 @@ void main(uint32_t magic, const multiboot_info_t *mbi)
     check_multiboot(magic, mbi);
     init_memory(mbi);
 
-    uintptr_t p1 = alloc_phys_page();
-    uintptr_t p2 = alloc_phys_page();
-    uintptr_t p3 = alloc_phys_page();
+    printf("Before allocations\n");
+    print_phys_mem();
+
+
+    void *p1 = alloc_pages(1);
+    void *p2 = alloc_pages(1);
+    void *p3 = alloc_pages(1);
 
     printf("After 3 allocations:\n");
     print_phys_mem();
 
-    free_phys_page(p2);
+    free_pages(p2, 1);
     printf("After free 2:\n");
     print_phys_mem();
 
-    free_phys_page(p1);
+    free_pages(p1, 1);
     printf("After free 1:\n");
     print_phys_mem();
 
-    free_phys_page(p3);
+    free_pages(p3, 1);
     printf("After free 3:\n");
     print_phys_mem();
 

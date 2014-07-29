@@ -41,6 +41,7 @@ OBJS := src/startup/startup.o         \
         src/mm/paging.o               \
         src/mm/linker_symbols.o       \
         src/mm/phys_allocator.o       \
+        src/mm/slab.o                 \
         src/mm/mm.o                   \
         src/io/vga.o                  \
         src/io/port_io.o              \

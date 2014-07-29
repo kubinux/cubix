@@ -23,87 +23,63 @@
 #include <stdint.h>
 
 
-static uintptr_t first_node_addr;
-
-
 struct node
 {
-    uintptr_t begin;
-    uintptr_t end;
-    uintptr_t next;
+    void *begin;
+    void *end;
+    struct node *next;
 };
 
 
-static inline void read_node(struct node *node, uintptr_t phys_address)
-{
-    const void *addr = (void *)mm_va(phys_address);
-    memcpy(node, addr, sizeof(struct node));
-    ASSERT_MSG(node->begin == phys_address, "corrupted memory node");
-}
-
-
-static inline void write_node(const struct node *node)
-{
-    void *addr = (void *)mm_va(node->begin);
-    memcpy(addr, node, sizeof(struct node));
-}
+static struct node *first_node;
 
 
 static void try_merge_with_next(struct node *node)
 {
     if (node->end == node->next)
     {
-        struct node next_node;
-        read_node(&next_node, node->next);
-        node->next = next_node.next;
-        node->end = next_node.end;
+        struct node *next_node = node->next;
+        node->next = next_node->next;
+        node->end = next_node->end;
     }
 }
 
 
 static inline void insert_node(struct node *node)
 {
-    if (first_node_addr == 0 || node->begin < first_node_addr)
+    if (first_node == NULL || node->begin < (void *)first_node)
     {
-        node->next = first_node_addr;
+        node->next = first_node;
         try_merge_with_next(node);
-        write_node(node);
-        first_node_addr = node->begin;
+        first_node = node;
         return;
     }
 
-    struct node current = {0};
-    read_node(&current, first_node_addr);
-
-    while (current.next != 0)
+    struct node *current = first_node;
+    while (current->next != NULL)
     {
-        struct node next_node;
-        read_node(&next_node, current.next);
-        if (node->begin < next_node.begin)
+        struct node *next_node = current->next;
+        if (node->begin < next_node->begin)
         {
             break;
         }
         current = next_node;
     }
 
-    node->next = current.next;
-    current.next = node->begin;
+    node->next = current->next;
+    current->next = (struct node *)node->begin;
     try_merge_with_next(node);
-    write_node(node);
-    try_merge_with_next(&current);
-    write_node(&current);
+    try_merge_with_next(current);
 }
 
 
 void print_phys_mem(void)
 {
-    uintptr_t next = first_node_addr;
-    while (next)
+    const struct node *node = first_node;
+    while (node)
     {
-        struct node node;
-        read_node(&node, next);
-        printf("Node [0x%lx, 0x%lx)\n", node.begin, node.end);
-        next = node.next;
+        printf("Node [0x%lx, 0x%lx, 0x%lx)\n", (uintptr_t)node->begin, (uintptr_t)node->end, (uintptr_t)node->next);
+        node = node->next;
     }
 }
 
@@ -122,40 +98,46 @@ void init_phys_allocator(const struct address_range *regions, int num_regions)
         {
             continue;
         }
-        struct node node = {.begin = beg, .end = end};
-        insert_node(&node);
+        struct node *node = (struct node *)mm_va(beg);
+        node->begin = (void *)mm_va(beg);
+        node->end = (void *)mm_va(end);
+        node->next = NULL;
+        insert_node(node);
     }
 }
 
 
-uintptr_t alloc_phys_page(void)
+void *alloc_pages(size_t num_pages)
 {
-    uintptr_t res = 0;
-    if (first_node_addr != 0)
+    void *res = NULL;
+    if (first_node)
     {
-        struct node first_node;
-        res = first_node_addr;
-        read_node(&first_node, first_node_addr);
-        if (first_node.end - first_node.begin == PAGE_SIZE)
+        res = first_node;
+        if (first_node->end - first_node->begin == PAGE_SIZE)
         {
-            first_node_addr = first_node.next;
+            first_node = first_node->next;
         }
         else
         {
-            first_node.begin += PAGE_SIZE;
-            write_node(&first_node);
-            first_node_addr = first_node.begin;
+            void *new_begin = first_node->begin + PAGE_SIZE;
+            void *new_end = first_node->end;
+            struct node *new_next = first_node->next;
+            first_node = (struct node *)new_begin;
+            first_node->begin = new_begin;
+            first_node->end = new_end;
+            first_node->next = new_next;
         }
     }
     return res;
 }
 
 
-void free_phys_page(uintptr_t phys_address)
+void free_pages(void *virt_address, size_t num_pages)
 {
-    ASSERT_MSG(!(phys_address & 0xFFF), "address needs to be page-aligned");
-    struct node new_node = {.begin = phys_address,
-                            .end = phys_address + PAGE_SIZE};
-    insert_node(&new_node);
+    struct node *new_node = (struct node *)virt_address;
+    new_node->begin = virt_address;
+    new_node->end = virt_address + PAGE_SIZE;
+    new_node->next = NULL;
+    insert_node(new_node);
 }
 

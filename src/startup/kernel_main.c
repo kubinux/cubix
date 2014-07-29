@@ -98,25 +98,29 @@ void main(uint32_t magic, const multiboot_info_t *mbi)
     printf("Before allocations\n");
     print_phys_mem();
 
-
     void *p1 = alloc_pages(1);
+    //printf("After 1st alloc 0x%lx\n", (uintptr_t)p1);
+    //print_phys_mem();
     void *p2 = alloc_pages(1);
+    //printf("After 2nd alloc 0x%lx\n", (uintptr_t)p2);
+    //print_phys_mem();
     void *p3 = alloc_pages(1);
-
-    printf("After 3 allocations:\n");
-    print_phys_mem();
-
-    free_pages(p2, 1);
-    printf("After free 2:\n");
-    print_phys_mem();
+    //printf("After 3rd alloc 0x%lx\n", (uintptr_t)p3);
+    //print_phys_mem();
 
     free_pages(p1, 1);
     printf("After free 1:\n");
     print_phys_mem();
-
-    free_pages(p3, 1);
-    printf("After free 3:\n");
+    p1 = alloc_pages(3);
+    printf("After 1st alloc 0x%lx\n", (uintptr_t)p1);
     print_phys_mem();
+    free_pages(p1, 3);
+    print_phys_mem();
+    free_pages(p2, 1);
+    free_pages(p3, 1);
+    print_phys_mem();
+
+
 
     // TODO
     // put stuff here

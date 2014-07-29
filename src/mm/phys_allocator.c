@@ -112,33 +112,46 @@ void init_phys_allocator(const struct address_range *regions, int num_regions)
 
 void *alloc_pages(size_t num_pages)
 {
-    void *res = NULL;
-    if (first_node)
+    void *result = NULL;
+    struct node *prev = NULL;
+    struct node *node = first_node;
+    while (node)
     {
-        res = first_node;
-        if (first_node->num_pages == 1)
+        if (node->num_pages >= num_pages)
         {
-            first_node = first_node->next;
+            result = node;
+            size_t new_num_pages = node->num_pages - num_pages;
+            struct node *next = node->next;
+            if (new_num_pages > 0)
+            {
+                struct node *new_node =
+                    (struct node *)((void *)node + num_pages * PAGE_SIZE);
+                new_node->num_pages = new_num_pages;
+                new_node->next = node->next;
+                next = new_node;
+            }
+            if (prev)
+            {
+                prev->next = next;
+            }
+            else
+            {
+                first_node = next;
+            }
+            break;
         }
-        else
-        {
-            void *new_begin = (void *)first_node + PAGE_SIZE;
-            size_t new_num_pages = first_node->num_pages - 1;
-            struct node *new_next = first_node->next;
-            first_node = (struct node *)new_begin;
-            first_node->num_pages = new_num_pages;
-            first_node->next = new_next;
-        }
+        prev = node;
+        node = node->next;
     }
-    return res;
+    return result;
 }
 
 
 void free_pages(void *virt_address, size_t num_pages)
 {
-    struct node *new_node = (struct node *)virt_address;
-    new_node->num_pages = num_pages;
-    new_node->next = NULL;
-    insert_node(new_node);
+    struct node *node = (struct node *)virt_address;
+    node->num_pages = num_pages;
+    node->next = NULL;
+    insert_node(node);
 }
 

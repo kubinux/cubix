@@ -13,38 +13,16 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef MM_H_INCLUDED_PYZC6EWG
-#define MM_H_INCLUDED_PYZC6EWG
+#ifndef PAGE_H_INCLUDED_EETA6YDN
+#define PAGE_H_INCLUDED_EETA6YDN
 
-#include <mm/address_range.h>
-#include <mm/paging.h>
-#include <mm/page.h>
 #include <stdint.h>
 
 
-#define PAGE_OFFSET 0xFFFF880000000000
-
-
-void mm_init(struct address_range *ranges, size_t num_ranges);
-
-
-inline uintptr_t mm_va(uintptr_t phys_address)
+struct page
 {
-    return phys_address + PAGE_OFFSET;
-}
-
-
-inline uintptr_t mm_pa(uintptr_t virt_address)
-{
-    return virt_address - PAGE_OFFSET;
-}
-
-
-inline struct page *mm_page(uintptr_t virt_address)
-{
-    extern struct page *first_page_struct;
-    return first_page_struct + (mm_pa(virt_address) >> 12);
-}
+    uint32_t flags;
+};
 
 
 #endif // include guard

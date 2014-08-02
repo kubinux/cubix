@@ -119,6 +119,10 @@ void main(uint32_t magic, const multiboot_info_t *mbi)
     // TODO
     // put stuff here
     
+    struct page *ptr = (struct page *)(0x123456);
+    ptr = ALIGN_PTR(ptr, 0x100);
+    printf("aligned ptr: %p\n", ptr);
+    printf("aligned: %x\n", ALIGN(0x123456, 0x100));
 
 
     ASSERT_MSG(0, "control reached end of main");

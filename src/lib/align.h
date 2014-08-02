@@ -20,7 +20,11 @@
 
 
 #define ALIGN(value, alignment)                                               \
-    _ALIGN_MASK(value, (typeof(value)(alignment) - 1))
+    _ALIGN_MASK(value, ((typeof(value))(alignment) - 1))
+
+
+#define ALIGN_PTR(ptr, alignment)                                             \
+    ((typeof(ptr))(ALIGN((uintptr_t)(ptr), (alignment))))
 
 
 #define _ALIGN_MASK(value, mask) (((value) + (mask)) & (~(mask)))

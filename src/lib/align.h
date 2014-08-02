@@ -13,28 +13,17 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef SLAB_H_INCLUDED_LAFCXXUQ
-#define SLAB_H_INCLUDED_LAFCXXUQ
+#ifndef ALIGN_H_INCLUDED_LOANUUW5
+#define ALIGN_H_INCLUDED_LOANUUW5
 
-#include <stddef.h>
 #include <stdint.h>
 
-struct kmem_cache;
+
+#define ALIGN(value, alignment)                                               \
+    _ALIGN_MASK(value, (typeof(value)(alignment) - 1))
 
 
-struct kmem_cache *kmem_cache_create(const char *name, size_t size,
-                                     size_t alignment,
-                                     void (*ctor)(void *, size_t),
-                                     void (*dtor)(void *, size_t));
-
-
-void kmem_cache_destroy(struct kmem_cache *cache);
-
-
-void *kmem_cache_alloc(struct kmem_cache *cache, uint32_t flags);
-
-
-void kmem_cache_free(struct kmem_cache *cache, void *object);
+#define _ALIGN_MASK(value, mask) (((value) + (mask)) & (~(mask)))
 
 
 #endif // include guard

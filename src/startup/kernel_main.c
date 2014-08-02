@@ -21,6 +21,7 @@
 #include <io/vga.h>
 #include <lib/printf.h>
 #include <lib/assert.h>
+#include <lib/align.h>
 
 #include <stddef.h>
 #include <stdint.h>
@@ -106,7 +107,7 @@ void main(uint32_t magic, const multiboot_info_t *mbi)
     printf("After free 1:\n");
     print_phys_mem();
     p1 = alloc_pages(3);
-    printf("After 1st alloc 0x%lx\n", (uintptr_t)p1);
+    printf("After 1st alloc 0x%p\n", p1);
     print_phys_mem();
     free_pages(p1, 3);
     free_pages(p2, 1);
@@ -114,9 +115,11 @@ void main(uint32_t magic, const multiboot_info_t *mbi)
     printf("At the end\n");
     print_phys_mem();
 
-    printf("First page struct 0x%lx\n", (uintptr_t)mm_page(PAGE_OFFSET + PAGE_SIZE));
+    printf("First page struct 0x%p\n", mm_page(PAGE_OFFSET + PAGE_SIZE));
     // TODO
     // put stuff here
+    
+
 
     ASSERT_MSG(0, "control reached end of main");
 }

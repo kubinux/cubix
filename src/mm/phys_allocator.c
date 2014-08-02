@@ -81,8 +81,7 @@ void print_phys_mem(void)
     const struct node *node = first_node;
     while (node)
     {
-        printf("Node [0x%lx, 0x%lx), 0x%lx\n", (uintptr_t)node,
-               (uintptr_t)(node_end(node)), (uintptr_t)node->next);
+        printf("Node [0x%p, 0x%p), 0x%p\n", node, node_end(node), node->next);
         node = node->next;
     }
 }

@@ -74,7 +74,8 @@ enum format
     FMT_UNSIGNED_INT_HEX,
     FMT_LONG_INT_DEC,
     FMT_UNSIGNED_LONG_INT_DEC,
-    FMT_UNSIGNED_LONG_INT_HEX
+    FMT_UNSIGNED_LONG_INT_HEX,
+    FMT_VOID_PTR
 };
 
 static enum format parse_format(const char** fmt)
@@ -93,6 +94,8 @@ static enum format parse_format(const char** fmt)
         return FMT_UNSIGNED_INT_DEC;
     case 'x':
         return FMT_UNSIGNED_INT_HEX;
+    case 'p':
+        return FMT_VOID_PTR;
     case 'l':
         c = **fmt;
         ++(*fmt);
@@ -152,6 +155,9 @@ static int vprintf(const char* fmt_str, va_list va)
             break;
         case FMT_UNSIGNED_LONG_INT_HEX:
             num_written += put_unsigned_int(va_arg(va, unsigned long int), 16);
+            break;
+        case FMT_VOID_PTR:
+            num_written += put_unsigned_int((uintmax_t)va_arg(va, void *), 16);
             break;
         default:
             return -1;

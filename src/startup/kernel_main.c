@@ -42,16 +42,11 @@ static int extract_memory_regions(const multiboot_info_t *mbi,
         typedef multiboot_memory_map_t mmap_t;
         const mmap_t *mmap = (const mmap_t *)mmap_addr;
 
-        uintptr_t kernel_end = (kernel_phys_end + PAGE_SIZE) & (~0xFFF);
+        uintptr_t kernel_end = ALIGN(kernel_phys_end, PAGE_SIZE);
 
         if (mmap->type == 1)
         {
-            uintptr_t beg = mmap->addr;
-            if (beg & 0xFFF)
-            {
-                beg = (beg + PAGE_SIZE) & (~0xFFF);
-            }
-
+            uintptr_t beg = ALIGN(mmap->addr, PAGE_SIZE);
             uintptr_t end = ((mmap->addr + mmap->len - 1) & (~0xFFF)) + 1;
 
             if (beg < kernel_end)

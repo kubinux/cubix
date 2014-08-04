@@ -37,6 +37,7 @@ OBJS := src/startup/startup.o         \
         src/lib/memcpy.o              \
         src/lib/memset.o              \
         src/lib/printf.o              \
+        src/lib/string.o              \
         src/lib/assert.o              \
         src/mm/paging.o               \
         src/mm/linker_symbols.o       \

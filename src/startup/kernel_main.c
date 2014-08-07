@@ -119,7 +119,6 @@ void main(uint32_t magic, const multiboot_info_t *mbi)
     printf("aligned ptr: %p\n", ptr);
     printf("aligned: %x\n", ALIGN(0x123456, 0x100));
 
-
     ASSERT_MSG(0, "control reached end of main");
 }
 

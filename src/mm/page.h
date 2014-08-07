@@ -19,9 +19,17 @@
 #include <stdint.h>
 
 
+struct kmem_cache;
+
+
 struct page
 {
-    uint32_t flags;
+    uint64_t flags;
+    union
+    {
+        struct kmem_cache *slab_cache;
+        struct page *head_page;
+    };
 };
 
 

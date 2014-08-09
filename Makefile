@@ -39,6 +39,7 @@ OBJS := src/startup/startup.o         \
         src/lib/printf.o              \
         src/lib/string.o              \
         src/lib/assert.o              \
+        src/lib/list.o                \
         src/mm/paging.o               \
         src/mm/linker_symbols.o       \
         src/mm/phys_allocator.o       \

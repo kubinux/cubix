@@ -22,6 +22,7 @@
 #include <lib/printf.h>
 #include <lib/assert.h>
 #include <lib/align.h>
+#include <lib/list.h>
 
 #include <stddef.h>
 #include <stdint.h>
@@ -85,39 +86,54 @@ static void check_multiboot(uint32_t magic, const multiboot_info_t *mbi)
 }
 
 
+struct foo
+{
+    int i;
+    struct list_node list;
+};
+
+
+void print_foo_list(struct list_head *head)
+{
+    const struct foo *iter;
+    list_for_each(head, iter, list)
+    {
+        printf("%d\n", iter->i);
+    }
+}
+
+struct bar
+{
+    struct foo f;
+    int i;
+};
+
 void main(uint32_t magic, const multiboot_info_t *mbi)
 {
+    struct bar b;
+    struct foo *f = &b;
+
     vga_clear();
     check_multiboot(magic, mbi);
     init_memory(mbi);
 
-    printf("Before allocations\n");
-    print_phys_mem();
-
-    void *p1 = alloc_pages(1);
-    void *p2 = alloc_pages(1);
-    void *p3 = alloc_pages(1);
-
-    free_pages(p1, 1);
-    printf("After free 1:\n");
-    print_phys_mem();
-    p1 = alloc_pages(3);
-    printf("After 1st alloc 0x%p\n", p1);
-    print_phys_mem();
-    free_pages(p1, 3);
-    free_pages(p2, 1);
-    free_pages(p3, 1);
-    printf("At the end\n");
-    print_phys_mem();
-
-    printf("First page struct 0x%p\n", mm_page(PAGE_OFFSET + PAGE_SIZE));
-    // TODO
-    // put stuff here
+    //-----
     
-    struct page *ptr = (struct page *)(0x123456);
-    ptr = ALIGN_PTR(ptr, 0x100);
-    printf("aligned ptr: %p\n", ptr);
-    printf("aligned: %x\n", ALIGN(0x123456, 0x100));
+    struct foo f0;
+    f0.i = 0;
+    struct foo f1;
+    f1.i = 1;
+    struct foo f2;
+    f2.i = 2;
+
+    struct list_head foo_list = LIST_HEAD_INITIALIZER(foo_list);
+    list_append(&foo_list, &f0.list);
+    list_append(&foo_list, &f1.list);
+    list_append(&foo_list, &f2.list);
+    //list_remove(&f1.list);
+    print_foo_list(&foo_list);
+
+    //-----
 
     ASSERT_MSG(0, "control reached end of main");
 }

@@ -93,45 +93,32 @@ struct foo
 };
 
 
-void print_foo_list(struct list_head *head)
-{
-    const struct foo *iter;
-    list_for_each(head, iter, list)
-    {
-        printf("%d\n", iter->i);
-    }
-}
+declare_list_head(foo_list, struct foo, list);
 
-struct bar
-{
-    struct foo f;
-    int i;
-};
 
 void main(uint32_t magic, const multiboot_info_t *mbi)
 {
-    struct bar b;
-    struct foo *f = &b;
-
     vga_clear();
     check_multiboot(magic, mbi);
     init_memory(mbi);
 
     //-----
-    
-    struct foo f0;
-    f0.i = 0;
-    struct foo f1;
-    f1.i = 1;
-    struct foo f2;
-    f2.i = 2;
 
-    struct list_head foo_list = LIST_HEAD_INITIALIZER(foo_list);
-    list_append(&foo_list, &f0.list);
-    list_append(&foo_list, &f1.list);
-    list_append(&foo_list, &f2.list);
-    //list_remove(&f1.list);
-    print_foo_list(&foo_list);
+    struct foo f0 = {0, .list = {0}};
+    struct foo f1 = {1, .list = {0}};
+    struct foo f2 = {2, .list = {0}};
+
+    struct foo_list foos = list_head_initializer(foos);
+
+    list_append(&foos, &f0);
+    list_append(&foos, &f1);
+    list_append(&foos, &f2);
+
+    struct foo *iter;
+    list_for_each(iter, &foos)
+    {
+        printf("%d\n", iter->i);
+    }
 
     //-----
 

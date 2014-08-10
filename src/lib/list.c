@@ -16,20 +16,14 @@
 #include <lib/list.h>
 
 
-extern void list_head_init(struct list_head *head);
+extern void detail_list_init_head(struct list_node *node);
 
 
-extern bool list_empty(struct list_head *head);
+extern bool detail_list_empty(struct list_node *node);
 
 
-extern void list_insert(struct list_node *pos, struct list_node *node);
+extern void detail_list_insert(struct list_node *pos, struct list_node *node);
 
 
-extern void list_append(struct list_head *head, struct list_node *node);
-
-
-extern void list_prepend(struct list_head *head, struct list_node *node);
-
-
-extern void list_remove(struct list_node *node);
+extern void detail_list_remove(struct list_node *node);
 

@@ -29,12 +29,6 @@ struct list_node
 };
 
 
-struct list_head
-{
-    struct list_node node;
-};
-
-
 #define declare_list_head(head_type, elem_type, member)                       \
     struct head_type                                                          \
     {                                                                         \

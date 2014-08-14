@@ -47,7 +47,7 @@ struct list_node
     }
 
 
-#define list_init_head(head) detail_list_init_head((head)->node)
+#define list_init_head(head) detail_list_init_head(&(head)->node)
 inline void detail_list_init_head(struct list_node *node)
 {
     node->next = node;
@@ -143,10 +143,17 @@ inline void detail_list_remove(struct list_node *node)
                              detail_list_elem_to_node((head), elem)->next)
 
 
-#define list_for_each(iter, head)                                             \
+#define list_for_each(head, iter)                                             \
     for (iter = detail_list_first_elem(head);                                 \
          detail_list_elem_to_node((head), iter) != &(head)->node;             \
          iter = detail_list_next_elem((head), iter))
+
+
+#define list_for_each_safe(head, iter)                                        \
+    for (detail_list_type(head) *_next = detail_list_next_elem(               \
+             (head), (iter = detail_list_first_elem(head)));                  \
+         detail_list_elem_to_node((head), iter) != &(head)->node;             \
+         iter = _next, _next = detail_list_next_elem((head), iter))
 
 
 #endif // include guard

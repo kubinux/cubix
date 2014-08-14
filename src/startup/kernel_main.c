@@ -18,6 +18,7 @@
 #include <mm/paging.h>
 #include <mm/phys_allocator.h>
 #include <mm/linker_symbols.h>
+#include <mm/slab.h>
 #include <io/vga.h>
 #include <lib/printf.h>
 #include <lib/assert.h>
@@ -107,20 +108,32 @@ void main(uint32_t magic, const multiboot_info_t *mbi)
     struct foo f0 = {0, .list = {0}};
     struct foo f1 = {1, .list = {0}};
     struct foo f2 = {2, .list = {0}};
+    struct foo f3 = {3, .list = {0}};
+    struct foo f4 = {4, .list = {0}};
 
     struct foo_list foos = list_head_initializer(foos);
 
     list_append(&foos, &f0);
     list_append(&foos, &f1);
     list_append(&foos, &f2);
+    list_append(&foos, &f3);
+    list_append(&foos, &f4);
 
     struct foo *iter;
-    list_for_each(iter, &foos)
+    list_for_each_safe(&foos, iter)
+    {
+        printf("%d\n", iter->i);
+        if (iter->i == 2)
+        {
+            list_remove(&foos, iter);
+        }
+    }
+
+    list_for_each(&foos, iter)
     {
         printf("%d\n", iter->i);
     }
 
-    //-----
 
     ASSERT_MSG(0, "control reached end of main");
 }

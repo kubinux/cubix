@@ -20,6 +20,10 @@
 #include <stdint.h>
 
 
+#define KMEM_DEFAULT 0
+#define KMEM_ZEROED (1 << 0)
+
+
 struct kmem_cache;
 
 

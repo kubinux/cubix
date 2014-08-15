@@ -105,34 +105,33 @@ void main(uint32_t magic, const multiboot_info_t *mbi)
 
     //-----
 
-    struct foo f0 = {0, .list = {0}};
-    struct foo f1 = {1, .list = {0}};
-    struct foo f2 = {2, .list = {0}};
-    struct foo f3 = {3, .list = {0}};
-    struct foo f4 = {4, .list = {0}};
+    struct kmem_cache *cache = kmem_cache_create("test", 1024, 1024);
 
-    struct foo_list foos = list_head_initializer(foos);
+    void *obj1 = kmem_cache_alloc(cache, KMEM_ZEROED);
+    void *obj2 = kmem_cache_alloc(cache, KMEM_ZEROED);
+    void *obj3 = kmem_cache_alloc(cache, KMEM_ZEROED);
+    void *obj4 = kmem_cache_alloc(cache, KMEM_ZEROED);
+    void *obj5 = kmem_cache_alloc(cache, KMEM_ZEROED);
 
-    list_append(&foos, &f0);
-    list_append(&foos, &f1);
-    list_append(&foos, &f2);
-    list_append(&foos, &f3);
-    list_append(&foos, &f4);
+    printf("obj1: 0x%p\n", obj1);
+    printf("obj2: 0x%p\n", obj2);
+    printf("obj3: 0x%p\n", obj3);
+    printf("obj4: 0x%p\n", obj4);
+    printf("obj5: 0x%p\n", obj5);
 
-    struct foo *iter;
-    list_for_each_safe(&foos, iter)
-    {
-        printf("%d\n", iter->i);
-        if (iter->i == 2)
-        {
-            list_remove(&foos, iter);
-        }
-    }
+    kmem_cache_free(cache, obj2);
+    obj2 = kmem_cache_alloc(cache, KMEM_DEFAULT);
+    printf("obj2: 0x%p\n", obj2);
 
-    list_for_each(&foos, iter)
-    {
-        printf("%d\n", iter->i);
-    }
+    kmem_cache_free(cache, obj1);
+    kmem_cache_free(cache, obj2);
+    kmem_cache_free(cache, obj3);
+    kmem_cache_free(cache, obj4);
+    kmem_cache_free(cache, obj5);
+
+    kmem_cache_print_info(cache);
+
+    kmem_cache_destroy(cache);
 
 
     ASSERT_MSG(0, "control reached end of main");

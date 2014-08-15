@@ -4,6 +4,7 @@
 #include <mm/page.h>
 #include <mm/phys_allocator.h>
 #include <lib/string.h>
+#include <lib/memset.h>
 #include <lib/unused.h>
 #include <lib/printf.h>
 #include <lib/assert.h>
@@ -153,7 +154,7 @@ static struct page *make_new_slab(struct kmem_cache *cache)
 }
 
 
-void *kmem_cache_alloc(struct kmem_cache *cache, uint32_t flags UNUSED)
+void *kmem_cache_alloc(struct kmem_cache *cache, uint32_t flags)
 {
     struct page *page = list_first(&cache->partial_slabs);
     if (!page)
@@ -170,6 +171,21 @@ void *kmem_cache_alloc(struct kmem_cache *cache, uint32_t flags UNUSED)
     {
         list_remove(&cache->partial_slabs, page);
     }
+    else 
+    {
+        struct page *prev_page = list_prev(&cache->partial_slabs, page);
+        if (prev_page && (prev_page->num_allocated < page->num_allocated))
+        {
+            list_remove(&cache->partial_slabs, prev_page);
+            list_insert(&cache->partial_slabs, page, prev_page);
+        }
+    }
+
+    if (flags & KMEM_ZEROED)
+    {
+        memset(result, 0, cache->object_size);
+    }
+
     return result;
 }
 
@@ -199,16 +215,26 @@ void kmem_cache_free(struct kmem_cache *cache, void *object)
     }
     else if (page->num_allocated == cache->num_objects - 1)
     {
-        list_append(&cache->partial_slabs, page);
+        list_prepend(&cache->partial_slabs, page);
+    }
+    else
+    {
+        struct page *next_page = list_next(&cache->partial_slabs, page);
+        if (next_page && (next_page->num_allocated > page->num_allocated))
+        {
+            list_remove(&cache->partial_slabs, page);
+            list_insert(&cache->partial_slabs, next_page, page);
+        }
     }
 }
 
 
 void kmem_cache_print_info(struct kmem_cache *cache)
 {
-    printf("Object size: %lu\n", cache->object_size);
-    printf("Num pages:   %lu\n", cache->pages_per_slab);
-    printf("Wasted mem:  %lu\n",
+    printf("Name: %s\n", cache->name);
+    printf("  Object size: %lu\n", cache->object_size);
+    printf("  Num pages:   %lu\n", cache->pages_per_slab);
+    printf("  Wasted mem:  %lu\n",
            get_wasted_mem_percent(cache->object_size, cache->pages_per_slab));
 }
 

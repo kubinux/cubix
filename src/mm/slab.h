@@ -39,5 +39,8 @@ void *kmem_cache_alloc(struct kmem_cache *cache, uint32_t flags);
 void kmem_cache_free(struct kmem_cache *cache, void *object);
 
 
+void kmem_cache_print_info(struct kmem_cache *cache);
+
+
 #endif // include guard
 

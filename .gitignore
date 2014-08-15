@@ -21,3 +21,12 @@
 *.i*86
 *.x86_64
 *.hex
+
+# Cubix specific
+cubix.iso
+cubix.bin
+compile_commands.json
+qemu_dbg.py
+.yacbi
+.exrc
+.ycm_extra_conf.*

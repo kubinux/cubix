@@ -40,10 +40,17 @@ inline uintptr_t mm_pa(uintptr_t virt_address)
 }
 
 
-inline struct page *mm_page(uintptr_t virt_address)
+inline struct page *mm_page_from_virt(uintptr_t virt_address)
 {
     extern struct page *first_page_struct;
     return first_page_struct + (mm_pa(virt_address) >> 12);
+}
+
+
+inline uintptr_t mm_page_to_virt(struct page *page)
+{
+    extern struct page *first_page_struct;
+    return mm_va((page - first_page_struct) << 12);
 }
 
 

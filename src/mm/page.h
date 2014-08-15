@@ -16,18 +16,32 @@
 #ifndef PAGE_H_INCLUDED_EETA6YDN
 #define PAGE_H_INCLUDED_EETA6YDN
 
+#include <lib/list.h>
 #include <stdint.h>
 
 
 struct kmem_cache;
 
 
+#define PG_HEAD (1 << 1)
+#define PG_CONT (1 << 2)
+
+
 struct page
 {
     uint64_t flags;
+    struct list_node list;
     union
     {
-        struct kmem_cache *slab_cache;
+        // head page
+        struct
+        {
+            struct kmem_cache *slab_cache;
+            void *free_objects;
+            size_t num_allocated;
+        };
+
+        // continuation page
         struct page *head_page;
     };
 };

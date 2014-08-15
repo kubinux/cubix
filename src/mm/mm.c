@@ -18,6 +18,7 @@
 #include <mm/page.h>
 #include <mm/linker_symbols.h>
 #include <mm/phys_allocator.h>
+#include <mm/slab.h>
 #include <lib/printf.h>
 #include <lib/memcpy.h>
 #include <lib/memset.h>
@@ -28,7 +29,6 @@
 
 static struct address_range *mem_regions_begin;
 static struct address_range *mem_regions_end;
-struct page *first_page_struct;
 
 
 static mmap_entry_t pml4;
@@ -101,24 +101,16 @@ static void init_kernel_pages(void)
 }
 
 
-static void init_page_structs(void)
-{
-    struct address_range *last_region = mem_regions_end - 1;
-    size_t num_phys_pages = last_region->end / PAGE_SIZE;
-    size_t pages_needed = num_phys_pages * sizeof(struct page) / PAGE_SIZE + 1;
-    first_page_struct = (struct page *)alloc_pages(pages_needed);
-    ASSERT_MSG(first_page_struct, "failed to allocate page structs");
-    memset(first_page_struct, 0, num_phys_pages * sizeof(struct page));
-}
-
-
 extern uintptr_t mm_va(uintptr_t phys_address);
 
 
 extern uintptr_t mm_pa(uintptr_t virt_address);
 
 
-extern struct page *mm_page(uintptr_t virt_address);
+extern struct page *mm_page_from_virt(uintptr_t virt_address);
+
+
+extern uintptr_t mm_page_to_virt(struct page *page);
 
 
 void mm_init(struct address_range *ranges, size_t num_ranges)
@@ -127,6 +119,6 @@ void mm_init(struct address_range *ranges, size_t num_ranges)
     init_kernel_pages();
     init_phys_allocator(mem_regions_begin,
                         mem_regions_end - mem_regions_begin);
-    init_page_structs();
+    kmem_cache_init();
 }
 

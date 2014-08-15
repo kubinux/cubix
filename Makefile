@@ -70,7 +70,7 @@ isodir/boot/cubix.bin: cubix.bin
 
 .PHONY: run
 run: cubix.iso
-	qemu-system-x86_64 -monitor stdio -m 3000 -cdrom $<
+	qemu-system-x86_64 -monitor stdio -m 2000 -cdrom $<
 
 
 .PHONY: run-dbg

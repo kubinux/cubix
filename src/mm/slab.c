@@ -206,7 +206,7 @@ void kmem_cache_free(struct kmem_cache *cache, void *object)
     struct page *page = mm_page_from_virt((uintptr_t)object);
     page = get_head_page(page);
     ASSERT_MSG(cache == page->slab_cache,
-               "attemp to free object from another cache");
+               "attempt to free object from another cache");
     add_free_object(page, object);
     if (page->num_allocated == 0)
     {

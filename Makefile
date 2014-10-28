@@ -30,24 +30,28 @@ LDFLAGS := -T linker.ld            \
            -g
 
 
-OBJS := src/startup/startup.o         \
-        src/startup/multiboot.o       \
-        src/startup/enter_long_mode.o \
-        src/startup/kernel_main.o     \
-        src/lib/memcpy.o              \
-        src/lib/memset.o              \
-        src/lib/printf.o              \
-        src/lib/string.o              \
-        src/lib/assert.o              \
-        src/lib/list.o                \
-        src/mm/paging.o               \
-        src/mm/linker_symbols.o       \
-        src/mm/phys_allocator.o       \
-        src/mm/slab.o                 \
-        src/mm/mm.o                   \
-        src/io/vga.o                  \
-        src/io/port_io.o              \
-
+OBJS := src/startup/startup.o               \
+        src/startup/multiboot.o             \
+        src/startup/enter_long_mode.o       \
+        src/startup/kernel_main.o           \
+        src/interrupts/gate_descriptor.o    \
+        src/interrupts/isr.o                \
+        src/interrupts/isr_dispatch.o       \
+        src/interrupts/init_interrupts.o    \
+        src/lib/memcpy.o                    \
+        src/lib/memset.o                    \
+        src/lib/printf.o                    \
+        src/lib/string.o                    \
+        src/lib/assert.o                    \
+        src/lib/list.o                      \
+        src/mm/paging.o                     \
+        src/mm/linker_symbols.o             \
+        src/mm/phys_allocator.o             \
+        src/mm/slab.o                       \
+        src/mm/mm.o                         \
+        src/io/vga.o                        \
+        src/io/port_io.o                    \
+      
 
 cubix.iso: cubix.bin grub.cfg
 	mkdir -p isodir/boot/grub

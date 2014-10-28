@@ -14,6 +14,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <startup/multiboot.h>
+#include <interrupts/init_interrupts.h>
 #include <mm/mm.h>
 #include <mm/paging.h>
 #include <mm/phys_allocator.h>
@@ -133,6 +134,14 @@ void main(uint32_t magic, const multiboot_info_t *mbi)
 
     kmem_cache_destroy(cache);
 
+    init_interrupts();
+
+    __asm__ __volatile__("int $0x3");
+    __asm__ __volatile__("int $0x4");
+
+    while (1)
+    {
+    }
 
     ASSERT_MSG(0, "control reached end of main");
 }
